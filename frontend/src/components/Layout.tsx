@@ -130,7 +130,7 @@ const Layout: React.FC = () => {
           </div>
 
           <div className="header-right">
-            <Dropdown menu={{ items: userMenu }} trigger={['click']}>
+            <Dropdown menu={{ items: userMenu as any }} trigger={['click']}>
               <Space style={{ cursor: 'pointer' }}>
                 <Avatar icon={<UserOutlined />} size="large" />
                 <span className="user-name">{user?.fullName || user?.username}</span>
@@ -161,7 +161,7 @@ const Layout: React.FC = () => {
         <Divider />
         <Menu
           mode="vertical"
-          items={userMenu}
+          items={userMenu as any}
           onClick={() => setMobileDrawerOpen(false)}
         />
       </Drawer>

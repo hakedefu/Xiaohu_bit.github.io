@@ -17,6 +17,7 @@
     },
     "resolveJsonModule": true,
     "moduleResolution": "bundler",
+    "noEmit": true,
     "allowImportingTsExtensions": true
   },
   "include": ["src"],

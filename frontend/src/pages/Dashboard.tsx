@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Row, Col, Card, Statistic, Table, Space, Tag, Button, Empty, Spin, Segmented } from 'antd';
 import {
-  UserOutlined,
   ProjectOutlined,
   CheckCircleOutlined,
   ClockCircleOutlined,
@@ -10,7 +9,7 @@ import {
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import 'dayjs/locale/zh-cn';
-import { projectApi, workLogApi } from '../services/api';
+import { projectApi } from '../services/api';
 import { Project, ProjectStatus, Priority } from '../types';
 import './Dashboard.css';
 
