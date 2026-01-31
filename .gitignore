@@ -33,9 +33,7 @@ yarn-error.log*
 Thumbs.db
 .DS_Store
 
-# build output
-frontend/dist/
-
 # database
 *.db
 *.sqlite
+
