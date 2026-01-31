@@ -1,0 +1,19 @@
+remote_theme: null
+exclude:
+  - node_modules/
+  - backend/
+  - docs/
+  - designs/
+  - .github/
+  - '*.bat'
+  - '*.sh'
+  - RAILS_DEPLOYMENT.md
+  - RAILWAY_DEPLOYMENT.md
+  - COMPLETE_DEPLOYMENT_GUIDE.md
+  - FULL_DEPLOYMENT_GUIDE.md
+  - DEPLOYMENT_QUICK_START.md
+  - DEPLOYMENT_READY.md
+  - GITHUB_DEPLOYMENT_COMPLETE.md
+  - GITHUB_DEPLOYMENT.md
+  - GITHUB_DEPLOYMENT_FILES_SUMMARY.md
+  - START_HERE.md
