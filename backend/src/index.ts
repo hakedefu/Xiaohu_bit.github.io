@@ -1,20 +1,21 @@
-import app from './app';
+﻿import app from './app';
 import { config } from './config';
 
-const PORT = config.port;
+const PORT = Number(process.env.PORT || config.port || 4000);
 
-app.listen(PORT, () => {
-  console.log(`🚀 服务器运行在 http://localhost:${PORT}`);
-  console.log(`📝 环境: ${config.nodeEnv}`);
-  console.log(`💾 数据库: ${config.databaseUrl.split('@')[1] || '已配置'}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on http://0.0.0.0:${PORT}`);
+  console.log(`Env: ${config.nodeEnv}`);
+  const dbInfo = config.databaseUrl.split('@')[1] || 'configured';
+  console.log(`DB: ${dbInfo}`);
 });
 
 process.on('SIGTERM', () => {
-  console.log('SIGTERM 已接收，正在关闭服务器...');
+  console.log('SIGTERM received, shutting down...');
   process.exit(0);
 });
 
 process.on('SIGINT', () => {
-  console.log('SIGINT 已接收，正在关闭服务器...');
+  console.log('SIGINT received, shutting down...');
   process.exit(0);
 });
