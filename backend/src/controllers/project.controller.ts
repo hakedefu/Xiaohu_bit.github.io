@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import type { Priority, ProjectStatus, Quadrant } from '@prisma/client';
 import { asyncHandler } from '../utils/errors';
 import { AuthenticatedRequest } from '../middleware/auth';
 import projectService from '../services/project.service';
@@ -15,8 +16,8 @@ export const createProject = asyncHandler(async (req: AuthenticatedRequest, res:
     description,
     customerId,
     assignedToId,
-    priority,
-    quadrant,
+    priority: (typeof priority === 'string' ? priority : undefined) as Priority | undefined,
+    quadrant: (typeof quadrant === 'string' ? quadrant : undefined) as Quadrant | undefined,
     dueDate: new Date(dueDate),
     estimatedHours,
     tags,
@@ -58,8 +59,8 @@ export const updateProject = asyncHandler(async (req: AuthenticatedRequest, res:
   const project = await projectService.updateProject(id, {
     title,
     description,
-    priority,
-    quadrant,
+    priority: (typeof priority === 'string' ? priority : undefined) as Priority | undefined,
+    quadrant: (typeof quadrant === 'string' ? quadrant : undefined) as Quadrant | undefined,
     dueDate: dueDate ? new Date(dueDate) : undefined,
     estimatedHours,
     actualHours,
@@ -83,7 +84,10 @@ export const updateProjectStatus = asyncHandler(async (req: AuthenticatedRequest
   const { id } = req.params;
   const { status } = req.body;
 
-  const project = await projectService.updateProjectStatus(id, status);
+  const project = await projectService.updateProjectStatus(
+    id,
+    status as ProjectStatus
+  );
 
   const response: ApiResponse<any> = {
     success: true,
@@ -102,7 +106,10 @@ export const updateProjectQuadrant = asyncHandler(async (req: AuthenticatedReque
   const { id } = req.params;
   const { quadrant } = req.body;
 
-  const project = await projectService.updateProjectQuadrant(id, quadrant);
+  const project = await projectService.updateProjectQuadrant(
+    id,
+    quadrant as Quadrant
+  );
 
   const response: ApiResponse<any> = {
     success: true,
@@ -122,9 +129,9 @@ export const searchProjects = asyncHandler(async (req: AuthenticatedRequest, res
 
   const filters = {
     keyword: keyword as string | undefined,
-    status: status as string | undefined,
-    priority: priority as string | undefined,
-    quadrant: quadrant as string | undefined,
+    status: (typeof status === 'string' ? status : undefined) as ProjectStatus | undefined,
+    priority: (typeof priority === 'string' ? priority : undefined) as Priority | undefined,
+    quadrant: (typeof quadrant === 'string' ? quadrant : undefined) as Quadrant | undefined,
     assignedToId: assignedToId as string | undefined,
     customerId: customerId as string | undefined,
     dueDateFrom: dueDateFrom ? new Date(dueDateFrom as string) : undefined,

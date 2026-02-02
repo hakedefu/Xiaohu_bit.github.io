@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import type { WorkType } from '@prisma/client';
 import { asyncHandler } from '../utils/errors';
 import { AuthenticatedRequest } from '../middleware/auth';
 import workLogService from '../services/work-log.service';
@@ -15,7 +16,7 @@ export const createWorkLog = asyncHandler(async (req: AuthenticatedRequest, res:
     userId: req.user!.userId,
     title,
     description,
-    workType,
+    workType: workType as WorkType,
     duration,
     spentDate: new Date(spentDate),
     tags,
@@ -99,7 +100,7 @@ export const updateWorkLog = asyncHandler(async (req: AuthenticatedRequest, res:
   const log = await workLogService.updateWorkLog(id, {
     title,
     description,
-    workType,
+    workType: workType as WorkType,
     duration,
     spentDate: spentDate ? new Date(spentDate) : undefined,
     tags,

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, CustomerLevel, CustomerStatus } from '@prisma/client';
 import { AppError, ErrorCode } from '../utils/errors';
 import { PaginatedResponse, PaginationParams } from '../types';
 
@@ -6,8 +6,8 @@ const prisma = new PrismaClient();
 
 export interface CustomerSearchFilter {
   keyword?: string;
-  level?: string;
-  status?: string;
+  level?: CustomerLevel;
+  status?: CustomerStatus;
   tags?: string[];
   dateFrom?: Date;
   dateTo?: Date;
@@ -23,15 +23,22 @@ export class CustomerService {
       email?: string;
       phone?: string;
       company?: string;
-      level?: string;
+      level?: CustomerLevel;
       tags?: string[];
       notes?: string;
     },
     createdBy: string
   ) {
+    const { name, email, phone, company, level, tags, notes } = data;
     return await prisma.customer.create({
       data: {
-        ...data,
+        name,
+        email,
+        phone,
+        company,
+        level,
+        tags,
+        notes,
         createdBy,
       },
     });
@@ -198,16 +205,26 @@ export class CustomerService {
       }),
     ]);
 
-    return {
-      total,
-      byLevel: byLevel.reduce((acc, item) => {
+    const byLevelStats = byLevel.reduce(
+      (acc, item) => {
         acc[item.level] = item._count;
         return acc;
-      }, {}),
-      byStatus: byStatus.reduce((acc, item) => {
+      },
+      {} as Partial<Record<CustomerLevel, number>>
+    );
+
+    const byStatusStats = byStatus.reduce(
+      (acc, item) => {
         acc[item.status] = item._count;
         return acc;
-      }, {}),
+      },
+      {} as Partial<Record<CustomerStatus, number>>
+    );
+
+    return {
+      total,
+      byLevel: byLevelStats,
+      byStatus: byStatusStats,
     };
   }
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Priority, ProjectStatus, Quadrant } from '@prisma/client';
 import { AppError, ErrorCode } from '../utils/errors';
 import { PaginatedResponse, PaginationParams } from '../types';
 
@@ -6,9 +6,9 @@ const prisma = new PrismaClient();
 
 export interface ProjectSearchFilter {
   keyword?: string;
-  status?: string;
-  priority?: string;
-  quadrant?: string;
+  status?: ProjectStatus;
+  priority?: Priority;
+  quadrant?: Quadrant;
   assignedToId?: string;
   customerId?: string;
   dueDateFrom?: Date;
@@ -24,16 +24,35 @@ export class ProjectService {
     description?: string;
     customerId: string;
     assignedToId: string;
-    priority?: string;
-    quadrant?: string;
+    priority?: Priority;
+    quadrant?: Quadrant;
     dueDate: Date;
     estimatedHours?: number;
     tags?: string[];
   }) {
+    const {
+      title,
+      description,
+      customerId,
+      assignedToId,
+      priority,
+      quadrant,
+      dueDate,
+      estimatedHours,
+      tags,
+    } = data;
     return await prisma.project.create({
       data: {
-        ...data,
-        status: 'BACKLOG',
+        title,
+        description,
+        customerId,
+        assignedToId,
+        priority,
+        quadrant,
+        dueDate,
+        estimatedHours,
+        tags,
+        status: ProjectStatus.BACKLOG,
       },
       include: {
         customer: true,
@@ -105,7 +124,7 @@ export class ProjectService {
   /**
    * 更新项目状态
    */
-  async updateProjectStatus(projectId: string, status: string) {
+  async updateProjectStatus(projectId: string, status: ProjectStatus) {
     return await prisma.project.update({
       where: { id: projectId },
       data: { status },
@@ -115,7 +134,7 @@ export class ProjectService {
   /**
    * 更新项目象限（四象限）
    */
-  async updateProjectQuadrant(projectId: string, quadrant: string) {
+  async updateProjectQuadrant(projectId: string, quadrant: Quadrant) {
     return await prisma.project.update({
       where: { id: projectId },
       data: { quadrant },
@@ -196,10 +215,16 @@ export class ProjectService {
     });
 
     const quadrants = {
-      IMPORTANT_URGENT: projects.filter(p => p.quadrant === 'IMPORTANT_URGENT'),
-      IMPORTANT_NOT_URGENT: projects.filter(p => p.quadrant === 'IMPORTANT_NOT_URGENT'),
-      NOT_IMPORTANT_URGENT: projects.filter(p => p.quadrant === 'NOT_IMPORTANT_URGENT'),
-      NOT_IMPORTANT_NOT_URGENT: projects.filter(p => p.quadrant === 'NOT_IMPORTANT_NOT_URGENT'),
+      [Quadrant.IMPORTANT_URGENT]: projects.filter(p => p.quadrant === Quadrant.IMPORTANT_URGENT),
+      [Quadrant.IMPORTANT_NOT_URGENT]: projects.filter(
+        p => p.quadrant === Quadrant.IMPORTANT_NOT_URGENT
+      ),
+      [Quadrant.NOT_IMPORTANT_URGENT]: projects.filter(
+        p => p.quadrant === Quadrant.NOT_IMPORTANT_URGENT
+      ),
+      [Quadrant.NOT_IMPORTANT_NOT_URGENT]: projects.filter(
+        p => p.quadrant === Quadrant.NOT_IMPORTANT_NOT_URGENT
+      ),
     };
 
     return quadrants;
@@ -242,16 +267,26 @@ export class ProjectService {
       }),
     ]);
 
-    return {
-      total,
-      byStatus: byStatus.reduce((acc, item) => {
+    const byStatusStats = byStatus.reduce(
+      (acc, item) => {
         acc[item.status] = item._count;
         return acc;
-      }, {}),
-      byPriority: byPriority.reduce((acc, item) => {
+      },
+      {} as Partial<Record<ProjectStatus, number>>
+    );
+
+    const byPriorityStats = byPriority.reduce(
+      (acc, item) => {
         acc[item.priority] = item._count;
         return acc;
-      }, {}),
+      },
+      {} as Partial<Record<Priority, number>>
+    );
+
+    return {
+      total,
+      byStatus: byStatusStats,
+      byPriority: byPriorityStats,
       overdue,
       dueSoon,
     };

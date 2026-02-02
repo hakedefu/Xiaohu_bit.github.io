@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import type { CustomerLevel, CustomerStatus } from '@prisma/client';
 import { asyncHandler } from '../utils/errors';
 import { AuthenticatedRequest } from '../middleware/auth';
 import customerService from '../services/customer.service';
@@ -91,11 +92,18 @@ export const deleteCustomer = asyncHandler(async (req: AuthenticatedRequest, res
 export const searchCustomers = asyncHandler(async (req: AuthenticatedRequest, res: Response) => {
   const { keyword, level, status, tags, dateFrom, dateTo, page = 1, limit = 20 } = req.query;
 
+  const normalizedTags =
+    typeof tags === 'string'
+      ? [tags]
+      : Array.isArray(tags)
+        ? tags.filter((tag): tag is string => typeof tag === 'string')
+        : undefined;
+
   const filters = {
     keyword: keyword as string | undefined,
-    level: level as string | undefined,
-    status: status as string | undefined,
-    tags: tags ? (typeof tags === 'string' ? [tags] : tags) : undefined,
+    level: (typeof level === 'string' ? level : undefined) as CustomerLevel | undefined,
+    status: (typeof status === 'string' ? status : undefined) as CustomerStatus | undefined,
+    tags: normalizedTags,
     dateFrom: dateFrom ? new Date(dateFrom as string) : undefined,
     dateTo: dateTo ? new Date(dateTo as string) : undefined,
   };

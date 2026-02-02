@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, WorkType } from '@prisma/client';
 import { AppError, ErrorCode } from '../utils/errors';
 import { PaginatedResponse, PaginationParams } from '../types';
 
@@ -13,7 +13,7 @@ export class WorkLogService {
     userId: string;
     title: string;
     description?: string;
-    workType: string;
+    workType: WorkType;
     duration: number;
     spentDate: Date;
     tags?: string[];

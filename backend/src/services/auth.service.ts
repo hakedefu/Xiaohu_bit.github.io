@@ -87,7 +87,11 @@ export class AuthService {
     }
 
     // 生成令牌
-    const token = createToken(user, config.jwtSecret, config.jwtExpiration);
+    const token = createToken(
+      user,
+      config.jwtSecret,
+      config.jwtExpiration as import('jsonwebtoken').SignOptions['expiresIn']
+    );
 
     return {
       token,

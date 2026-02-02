@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { config } from '../config';
 import { AppError, ErrorCode } from '../utils/errors';
 import { JWTPayload, UserRole } from '../types';
@@ -57,7 +57,11 @@ export const requireRole = (...roles: UserRole[]) => {
   };
 };
 
-export const createToken = (user: any, secret: string, expiresIn: string): string => {
+export const createToken = (
+  user: any,
+  secret: string,
+  expiresIn: SignOptions['expiresIn']
+): string => {
   const payload: JWTPayload = {
     userId: user.id,
     email: user.email,

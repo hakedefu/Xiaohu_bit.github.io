@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { ApiError, ApiResponse, ErrorCode } from '../types';
 
+export { ErrorCode } from '../types';
+
 export class AppError extends Error {
   constructor(
     public code: ErrorCode,
