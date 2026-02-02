@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型 - 系统用户
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  fullName  String
+  role      Role     @default(STAFF)
+  department String?
+  avatar    String?
+  phone     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  assignedProjects Project[] @relation("AssignedProjects")
+  workLogs         WorkLog[]
+  createdCustomers Customer[] @relation("CreatedBy")
+  searchTemplates  SearchTemplate[]
+
+  @@index([email])
+  @@index([role])
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+// 客户模型
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  phone     String?
+  company   String?
+  level     CustomerLevel @default(B)
+  status    CustomerStatus @default(PROSPECT)
+  tags      String[]
+  notes     String?
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String
+  creator   User     @relation("CreatedBy", fields: [createdBy], references: [id])
+
+  // 关系
+  projects  Project[]
+
+  @@index([email])
+  @@index([level])
+  @@index([status])
+}
+
+enum CustomerLevel {
+  S // 战略级
+  A // 重要级
+  B // 一般级
+  C // 潜在级
+}
+
+enum CustomerStatus {
+  PROSPECT       // 售前咨询
+  SUPPORTING     // 售中支持
+  MAINTENANCE    // 售后维护
+  COMPLETED      // 已完成
+  ARCHIVED       // 存档
+}
+
+// 项目模型
+model Project {
+  id            String   @id @default(cuid())
+  title         String
+  description   String?
+  customerId    String
+  customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  assignedToId  String
+  assignedTo    User     @relation("AssignedProjects", fields: [assignedToId], references: [id])
+  
+  priority      Priority  @default(MEDIUM)
+  status        ProjectStatus @default(BACKLOG)
+  quadrant      Quadrant  @default(IMPORTANT_URGENT) // 四象限
+  
+  dueDate       DateTime
+  estimatedHours Int?
+  actualHours   Int?
+  
+  tags          String[]
+  attachments   String[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关系
+  workLogs      WorkLog[]
+  comments      ProjectComment[]
+
+  @@index([customerId])
+  @@index([assignedToId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ProjectStatus {
+  BACKLOG
+  TODO
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  BLOCKED
+  CANCELLED
+}
+
+enum Quadrant {
+  IMPORTANT_URGENT      // 重要紧急
+  IMPORTANT_NOT_URGENT  // 重要不紧急
+  NOT_IMPORTANT_URGENT  // 紧急不重要
+  NOT_IMPORTANT_NOT_URGENT // 不紧急不重要
+}
+
+// 工作日志模型
+model WorkLog {
+  id          String   @id @default(cuid())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  
+  title       String
+  description String?
+  workType    WorkType @default(OTHER)
+  
+  duration    Int      // 分钟
+  spentDate   DateTime
+  
+  tags        String[]
+  attachments String[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([userId])
+  @@index([spentDate])
+}
+
+enum WorkType {
+  DEVELOPMENT
+  TESTING
+  DOCUMENTATION
+  MEETING
+  SUPPORT
+  DEBUGGING
+  REVIEW
+  OTHER
+}
+
+// 项目评论
+model ProjectComment {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  content   String
+  author    String
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+// 搜索模板 - 保存常用搜索条件
+model SearchTemplate {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  filters   Json     // 存储搜索条件
+  
+  isDefault Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+// 工作日志模板
+model WorkLogTemplate {
+  id        String   @id @default(cuid())
+  title     String
+  description String?
+  workType  WorkType
+  defaultDuration Int // 分钟
+  tags      String[]
+  
+  isActive  Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
