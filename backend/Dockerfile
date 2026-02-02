@@ -1,6 +1,11 @@
-FROM node:20-alpine
+FROM node:20-bullseye-slim
 
 WORKDIR /app
+
+# Prisma needs OpenSSL; Debian slim doesn't include it by default.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Ensure npm uses the public npm registry (avoid private registry resolution issues)
 COPY .npmrc ./
